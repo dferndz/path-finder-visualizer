@@ -1,6 +1,6 @@
 CC=g++
 CF=-std=c++11 -ggdb
-OBJS=pdriver.o visualizer.o colors.o
+OBJS=pdriver.o visualizer.o colors.o board.o
 OUTPUT=pdriver
 
 all: $(OBJS)
