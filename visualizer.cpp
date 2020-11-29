@@ -1,7 +1,9 @@
 #include <random>
 #include <string.h>
+#include <thread>
 #include "visualizer.hpp"
 #include "colors.hpp"
+
 
 #define DEFAULT_W 800
 #define DEFAULT_H 600
@@ -9,7 +11,6 @@
 #define LINE_W 2
 
 #define FONT_PD 18
-
 #define FONT_FILE "./assets/Montserrat-font/Montserrat-Bold.ttf"
 
 #define WALL_COLOR Color::Yellow
@@ -17,7 +18,21 @@
 #define START_COLOR Color::Green
 #define TARGET_COLOR Color::Red
 
+#define T_COLOR 0xff3030ff
+#define SLEEP_STEP 500
+
 static coord_t last_cell;
+std::thread t1;
+
+enum status_t {READY, RUNNING, FINISHED};
+
+static status_t finder_status = READY;
+
+static void find_path(color_t **table, int w, int h, coord_t start, color_t target, int slep_step) {
+  table[start.y][start.x] = Color::White;
+  std::this_thread::sleep_for(std::chrono::milliseconds(slep_step));
+  finder_status = FINISHED;
+}
 
 /*
   Visualizer constructor
@@ -61,9 +76,10 @@ Visualizer::Visualizer(const char* title, Board *board) {
 
   // GUI elements
   clear_board_button = new Button(_renderer, _font, "Clear", 660, 5);
+  set_wall_button = new Button(_renderer, _font, "Set walls", 650, 100, Color::Yellow, 100);
   set_start_cell_button = new Button(_renderer, _font, "Set start", 650, 200, Color::Green, 100);
   set_target_cell_button = new Button(_renderer, _font, "Set target", 650, 300, Color::Red, 100);
-  set_wall_button = new Button(_renderer, _font, "Set walls", 650, 100, Color::Yellow, 100);
+  find_path_button = new Button(_renderer, _font, "Find path", 650, 400, Color::Blue);
 }
 
 bool Visualizer::is_start_set() {
@@ -86,6 +102,7 @@ Visualizer::~Visualizer() {
   delete set_start_cell_button;
   delete set_target_cell_button;
   delete set_wall_button;
+  delete find_path_button;
 }
 
 /*
@@ -95,6 +112,11 @@ void Visualizer::run() {
   _is_running = true;
     SDL_Event event;
     while(_is_running) {
+        if(finder_status == FINISHED) {
+          _selection_status = SET_WALL;
+          t1.join();
+          finder_status = READY;
+        }
         // Process events
         while(SDL_PollEvent(&event)) {
             process_events(event);
@@ -136,6 +158,7 @@ void Visualizer::draw_controls() {
   set_start_cell_button->draw_button(_renderer, _selection_status == SET_START);
   set_target_cell_button->draw_button(_renderer, _selection_status == SET_TARGET);
   set_wall_button->draw_button(_renderer, _selection_status == SET_WALL);
+  find_path_button->draw_button(_renderer, _selection_status == FINDING_PATH);
 }
 
 int Visualizer::get_window_height() {
@@ -165,6 +188,8 @@ void Visualizer::process_events(SDL_Event &event) {
     break;
   
   case SDL_MOUSEBUTTONDOWN:
+    if(_selection_status == FINDING_PATH) break;
+
     if(clear_board_button->is_pressed()) {
       _board->clear_board(EMPTY_COLOR);
       _start.x = -1;
@@ -185,7 +210,15 @@ void Visualizer::process_events(SDL_Event &event) {
       _selection_status = SET_WALL;
       break;
     }
+    if(find_path_button->is_pressed()) {
+      if(finder_status == READY) {
+         _selection_status = FINDING_PATH;
+         t1 = std::thread(find_path, _board->get_table(), _board->get_width(), _board->get_height(), _start, T_COLOR, SLEEP_STEP);
+      }
+    }
   case SDL_MOUSEMOTION:
+  if(_selection_status == FINDING_PATH) break;
+
     mouse_status = SDL_GetMouseState(&m_x, &m_y);
     coords = get_cell(m_x, m_y);
 
@@ -221,10 +254,7 @@ void Visualizer::process_events(SDL_Event &event) {
 
         _board->get_cell(_target.x, _target.y) = TARGET_COLOR;
       }
-      
-
       last_cell = coords;
-
     }
     break;
   
@@ -232,6 +262,8 @@ void Visualizer::process_events(SDL_Event &event) {
     break;
   }
 }
+
+
 
 coord_t Visualizer::get_cell(int m_x, int m_y) {
   coord_t coords;

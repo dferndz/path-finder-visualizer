@@ -1,6 +1,11 @@
 #pragma once
 
-#define DEFAULT_COLOR 0x4287f5ff
+#include <thread>
+#include "colors.hpp"
+
+class Visualizer;
+
+#define DEFAULT_COLOR Color::Blue
 
 struct coord_t {
   int x, y;

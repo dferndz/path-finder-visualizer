@@ -8,6 +8,7 @@
 #define SET_WALL 0x1
 #define SET_START 0x2
 #define SET_TARGET 0x4
+#define FINDING_PATH 0x8
 
 class Visualizer {
 public:
@@ -19,6 +20,7 @@ public:
   bool is_running() { return _is_running; }
   int get_window_width();
   int get_window_height();
+
 private:
   void draw_board();
   void draw_controls();
@@ -45,4 +47,5 @@ private:
   Button *set_start_cell_button;
   Button *set_target_cell_button;
   Button *set_wall_button;
+  Button *find_path_button;
 };

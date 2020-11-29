@@ -1,4 +1,5 @@
 #include "board.hpp"
+#include "visualizer.hpp"
 
 Board::Board(int height, int width): _h(height), _w(width) {
   _table = new unsigned*[_h];

@@ -2,14 +2,14 @@
 
 #include <SDL2/SDL.h>
 
-typedef const unsigned color_t;
+typedef unsigned color_t;
 
 struct Color {
-  static color_t Blue = 0x4287f5ff;
-  static color_t Green = 0x3bff55ff;
-  static color_t Red = 0xff3030ff;
-  static color_t Yellow = 0xf5f23dff;
-  static color_t White = 0xffffffff;
+  const static color_t Blue = 0x4287f5ff;
+  const static color_t Green = 0x3bff55ff;
+  const static color_t Red = 0xff3030ff;
+  const static color_t Yellow = 0xf5f23dff;
+  const static color_t White = 0xffffffff;
 };
 
 SDL_Color u_to_color(unsigned);
