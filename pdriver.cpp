@@ -3,11 +3,12 @@
 
 int main() {
   Visualizer::init();
-  Board b(6, 8);
+  Board b(20, 20);
 
-  Visualizer v("Path Finding", &b);
-  v.run();
+  Visualizer *v = new Visualizer("Path Finding", &b);
+  v->run();
 
+  delete v;
   Visualizer::quit();
   return 0;
 }

@@ -1,12 +1,23 @@
 #include <random>
 #include <string.h>
-
 #include "visualizer.hpp"
 #include "colors.hpp"
 
 #define DEFAULT_W 800
 #define DEFAULT_H 600
-#define LINE_W 4
+#define BOARD_W 600
+#define LINE_W 2
+
+#define FONT_PD 18
+
+#define FONT_FILE "./assets/Montserrat-font/Montserrat-Bold.ttf"
+
+#define WALL_COLOR Color::Yellow
+#define EMPTY_COLOR Color::Blue
+#define START_COLOR Color::Green
+#define TARGET_COLOR Color::Red
+
+static coord_t last_cell;
 
 /*
   Visualizer constructor
@@ -16,6 +27,7 @@
 Visualizer::Visualizer(const char* title, Board *board) {
   // save pointer to board
   _board = board;
+  _board->clear_board(EMPTY_COLOR);
 
   // create sdl window
   _window = SDL_CreateWindow(
@@ -36,6 +48,30 @@ Visualizer::Visualizer(const char* title, Board *board) {
 
   // initialize running flag
   _is_running = false;
+
+  // Load Font file
+  if(!(_font = TTF_OpenFont(FONT_FILE, FONT_PD))) exit(1);
+
+  // default status
+  _selection_status = SET_WALL;
+  _start.x = -1;
+  _start.y = -1;
+  _target.x = -1;
+  _target.y = -1;
+
+  // GUI elements
+  clear_board_button = new Button(_renderer, _font, "Clear", 660, 5);
+  set_start_cell_button = new Button(_renderer, _font, "Set start", 650, 200, Color::Green, 100);
+  set_target_cell_button = new Button(_renderer, _font, "Set target", 650, 300, Color::Red, 100);
+  set_wall_button = new Button(_renderer, _font, "Set walls", 650, 100, Color::Yellow, 100);
+}
+
+bool Visualizer::is_start_set() {
+  return (_start.x >= 0 && _start.y >= 0);
+}
+
+bool Visualizer::is_target_set() {
+  return (_target.x >= 0 && _target.y >= 0);
 }
 
 /*
@@ -44,6 +80,12 @@ Visualizer::Visualizer(const char* title, Board *board) {
 Visualizer::~Visualizer() {
   SDL_DestroyRenderer(_renderer);
   SDL_DestroyWindow(_window);
+  TTF_CloseFont(_font);
+
+  delete clear_board_button;
+  delete set_start_cell_button;
+  delete set_target_cell_button;
+  delete set_wall_button;
 }
 
 /*
@@ -63,6 +105,7 @@ void Visualizer::run() {
         SDL_RenderClear(_renderer);
 
         // Draw
+        draw_controls();
         draw_board();
 
         // Show what was drawn
@@ -75,8 +118,8 @@ void Visualizer::run() {
  */
 void Visualizer::draw_board() {
   SDL_Rect rect;
-  rect.w = get_window_width() / _board->get_width() - LINE_W;
-  rect.h = get_window_height() / _board->get_height() - LINE_W;
+  rect.w = BOARD_W / _board->get_width() - LINE_W;
+  rect.h = DEFAULT_H / _board->get_height() - LINE_W;
 
   for (unsigned i = 0; i < _board->get_height(); i++) {
     for(unsigned j = 0; j < _board->get_width(); j++) {
@@ -86,6 +129,13 @@ void Visualizer::draw_board() {
       SDL_RenderFillRect(_renderer, &rect);
     }
   }
+}
+
+void Visualizer::draw_controls() {
+  clear_board_button->draw_button(_renderer, false);
+  set_start_cell_button->draw_button(_renderer, _selection_status == SET_START);
+  set_target_cell_button->draw_button(_renderer, _selection_status == SET_TARGET);
+  set_wall_button->draw_button(_renderer, _selection_status == SET_WALL);
 }
 
 int Visualizer::get_window_height() {
@@ -105,6 +155,7 @@ int Visualizer::get_window_width() {
  */
 void Visualizer::process_events(SDL_Event &event) {
   int m_x, m_y;
+  int mouse_status;
   coord_t coords;
 
   switch (event.type)
@@ -114,9 +165,67 @@ void Visualizer::process_events(SDL_Event &event) {
     break;
   
   case SDL_MOUSEBUTTONDOWN:
-    SDL_GetMouseState(&m_x, &m_y);
+    if(clear_board_button->is_pressed()) {
+      _board->clear_board(EMPTY_COLOR);
+      _start.x = -1;
+      _start.y = -1;
+      _target.x = -1;
+      _target.y = -1;
+      break;
+    }
+    if(set_start_cell_button->is_pressed()) {
+      _selection_status = SET_START;
+      break;
+    }
+    if(set_target_cell_button->is_pressed()) {
+      _selection_status = SET_TARGET;
+      break;
+    }
+    if(set_wall_button->is_pressed()) {
+      _selection_status = SET_WALL;
+      break;
+    }
+  case SDL_MOUSEMOTION:
+    mouse_status = SDL_GetMouseState(&m_x, &m_y);
     coords = get_cell(m_x, m_y);
-    _board->get_table()[coords.y][coords.x] = Color::Green;
+
+    if (
+      m_x <= BOARD_W &&
+      mouse_status & SDL_BUTTON(1) && 
+      (event.type == SDL_MOUSEMOTION && (coords.x != last_cell.x || coords.y != last_cell.y)) 
+      || event.type == SDL_MOUSEBUTTONDOWN
+    ) {
+
+      if(_selection_status == SET_WALL) {
+        _board->get_cell(coords.x, coords.y) == WALL_COLOR ?
+        _board->get_cell(coords.x, coords.y) = EMPTY_COLOR :
+        _board->get_cell(coords.x, coords.y) = WALL_COLOR;
+      }
+
+      if(_selection_status == SET_START) {
+        if(is_start_set()) {
+          _board->get_cell(_start.x, _start.y) = EMPTY_COLOR;
+        }
+        _start.x = coords.x;
+        _start.y = coords.y;
+
+        _board->get_cell(_start.x, _start.y) = START_COLOR;
+      }
+
+      if(_selection_status == SET_TARGET) {
+        if(is_target_set()) {
+          _board->get_cell(_target.x, _target.y) = EMPTY_COLOR;
+        }
+        _target.x = coords.x;
+        _target.y = coords.y;
+
+        _board->get_cell(_target.x, _target.y) = TARGET_COLOR;
+      }
+      
+
+      last_cell = coords;
+
+    }
     break;
   
   default:
@@ -127,8 +236,8 @@ void Visualizer::process_events(SDL_Event &event) {
 coord_t Visualizer::get_cell(int m_x, int m_y) {
   coord_t coords;
 
-  int w = get_window_width() / _board->get_width() - LINE_W;
-  int h = get_window_height() / _board->get_height() - LINE_W;
+  int w = BOARD_W / _board->get_width() - LINE_W;
+  int h = DEFAULT_H / _board->get_height() - LINE_W;
 
   coords.x = m_x / (w + LINE_W);
   coords.y = m_y / (h + LINE_W);
@@ -138,8 +247,10 @@ coord_t Visualizer::get_cell(int m_x, int m_y) {
 
 void Visualizer::init() {
   SDL_Init(SDL_INIT_VIDEO);
+  TTF_Init();
 }
 
 void Visualizer::quit() {
   SDL_Quit();
+  TTF_Quit();
 }

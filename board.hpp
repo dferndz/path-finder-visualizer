@@ -13,10 +13,9 @@ public:
   unsigned **get_table() { return _table; }
   int get_height() { return _h; }
   int get_width() { return _w; }
-
-private:
+  unsigned& get_cell(int x, int y) { return _table[y][x]; }
   void clear_board(unsigned c = DEFAULT_COLOR);
-
+private:
   unsigned **_table;
   int _h, _w;
 };
