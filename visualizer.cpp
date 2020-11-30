@@ -12,7 +12,7 @@
 #define BOARD_W 600
 #define LINE_W 2
 
-#define FONT_PD 30
+#define FONT_PD 200
 #define FONT_FILE "./assets/Montserrat-font/Montserrat-Bold.ttf"
 
 #define WALL_COLOR Color::Yellow
@@ -22,7 +22,7 @@
 
 #define T_COLOR 0xff3030ff
 #define SLEEP_STEP 5
-#define SLEEP_BACK 40
+#define SLEEP_BACK 30
 
 static coord_t last_cell;
 std::thread t1;
