@@ -2,6 +2,7 @@
 #include <string.h>
 #include <thread>
 #include <queue>
+#include <vector>
 #include "visualizer.hpp"
 #include "colors.hpp"
 
@@ -20,7 +21,8 @@
 #define TARGET_COLOR Color::Red
 
 #define T_COLOR 0xff3030ff
-#define SLEEP_STEP 1
+#define SLEEP_STEP 5
+#define SLEEP_BACK 40
 
 static coord_t last_cell;
 std::thread t1;
@@ -37,34 +39,29 @@ static color_t get_cell(color_t **table, coord_t pos) {
   return table[pos.y][pos.x];
 }
 
-static void push_adjacent(color_t **table, int w, int h, coord_t pos, std::queue<coord_t> &q, coord_t **prevs) {
+static bool is_point_valid(color_t **table, coord_t p, int w, int h) {
   color_t temp;
-  if(pos.x > 0) {
-    temp = table[pos.y][pos.x-1];
-    if (temp != WALL_COLOR && temp != Color::LightGreen && temp != START_COLOR) {
-      q.push(coord_t(pos.x-1, pos.y));
-      prevs[pos.y][pos.x-1] = pos;
-    }
+  if (p.x >= 0 && p.x < w && p.y >= 0 && p.y < h) {
+    temp = get_cell(table, p);
+    return (temp != WALL_COLOR && temp != START_COLOR && temp != Color::LightGreen);
   }
-  if(pos.x < w-1) {
-    temp = table[pos.y][pos.x+1];
-    if (temp != WALL_COLOR && temp != Color::LightGreen && temp != START_COLOR) {
-      q.push(coord_t(pos.x+1, pos.y));
-      prevs[pos.y][pos.x+1] = pos;
-    }
-  }
-  if(pos.y > 0) {
-    temp = table[pos.y-1][pos.x];
-    if (temp != WALL_COLOR && temp != Color::LightGreen && temp != START_COLOR) {
-      q.push(coord_t(pos.x, pos.y-1));
-      prevs[pos.y-1][pos.x] = pos;
-    }
-  }
-  if(pos.y < h-1) {
-    temp = table[pos.y+1][pos.x];
-    if (temp != WALL_COLOR && temp != Color::LightGreen && temp != START_COLOR) {
-      q.push(coord_t(pos.x, pos.y+1));
-      prevs[pos.y+1][pos.x] = pos;
+  return false;
+}
+
+static void push_adjacent(color_t **table, int w, int h, coord_t pos, std::queue<coord_t> &q, coord_t **prevs) {
+  std::vector<coord_t> points = {
+    coord_t(pos.x, pos.y-1),
+    coord_t(pos.x, pos.y+1),
+    coord_t(pos.x-1, pos.y),
+    coord_t(pos.x+1, pos.y)
+  };
+
+  for (auto p : points) {
+    if(is_point_valid(table, p, w, h)) {
+      if (get_cell(table, p) != TARGET_COLOR)
+        set_cell(table, p, Color::LightGreen);
+      q.push(p);
+      prevs[p.y][p.x] = pos;
     }
   }
 }
@@ -100,22 +97,21 @@ static void find_path(color_t **table, int w, int h, coord_t start) {
 
       while (b.x != start.x || b.y != start.y) {
         set_cell(table, b, Color::DarkGreen);
-        b.x = prev_points[b.y][b.x].x;
-        b.y = prev_points[b.y][b.x].y;
-        
+        b = prev_points[b.y][b.x];
+        std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_BACK));
       }
       
-
+      free_p_table(prev_points, h);
       finder_status = FINISHED;
       return;
     }
 
-    set_cell(table, q.front(), Color::LightGreen);
     push_adjacent(table, w, h, q.front(), q, prev_points);
     q.pop();
 
-    //std::this_thread::sleep_for(std::chrono::nanoseconds(SLEEP_STEP));
+    std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_STEP));
   }
+  free_p_table(prev_points, h);
   finder_status = FINISHED;
 }
 

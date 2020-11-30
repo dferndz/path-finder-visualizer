@@ -3,7 +3,7 @@
 
 int main() {
   Visualizer::init();
-  Board b(20, 20);
+  Board b(30, 30);
 
   Visualizer *v = new Visualizer("Path Finding", &b);
   v->run();
