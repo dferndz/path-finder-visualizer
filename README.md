@@ -7,5 +7,5 @@
 3- Run ```make```  
 4- Run ```./pdriver```  
 
+<img width="600" src="https://github.com/dferndz/path-finder-visualizer/blob/main/assets/screenshot.png?raw=true" />
 
-![image](https://github.com/dferndz/path-finder-visualizer/blob/main/assets/screenshot.png?raw=true)
