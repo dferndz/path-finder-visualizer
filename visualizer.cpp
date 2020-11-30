@@ -92,10 +92,9 @@ static void find_path(color_t **table, int w, int h, coord_t start) {
 
   while (!q.empty()) {
     if (get_cell(table, q.front()) == TARGET_COLOR) {
-      b.x = prev_points[q.front().y][q.front().x].x;
-      b.y = prev_points[q.front().y][q.front().x].y;
+      b = prev_points[q.front().y][q.front().x];
 
-      while (b.x != start.x || b.y != start.y) {
+      while (b != start) {
         set_cell(table, b, Color::DarkGreen);
         b = prev_points[b.y][b.x];
         std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_BACK));
@@ -240,18 +239,6 @@ void Visualizer::draw_controls() {
   set_target_cell_button->draw_button(_renderer, _selection_status == SET_TARGET);
   set_wall_button->draw_button(_renderer, _selection_status == SET_WALL);
   find_path_button->draw_button(_renderer, _selection_status == FINDING_PATH);
-}
-
-int Visualizer::get_window_height() {
-  int w, h;
-  SDL_GetWindowSize(_window, &w, &h);
-  return h;
-}
-
-int Visualizer::get_window_width() {
-  int w, h;
-  SDL_GetWindowSize(_window, &w, &h);
-  return w;
 }
 
 /*

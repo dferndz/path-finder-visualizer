@@ -6,7 +6,7 @@
 #define C_B_MASK 0x0000ff00
 #define C_A_MASK 0x000000ff
 
-SDL_Color u_to_color(unsigned c) {
+SDL_Color u_to_color(color_t c) {
   SDL_Color color;
 
   color.r = (c & C_R_MASK) >> 24;
@@ -17,7 +17,7 @@ SDL_Color u_to_color(unsigned c) {
   return color;
 }
 
-void set_sdl_render_color(SDL_Renderer *r, unsigned c) {
+void set_sdl_render_color(SDL_Renderer *r, color_t c) {
   SDL_Color color = u_to_color(c);
   SDL_SetRenderDrawColor(r, color.r, color.g, color.b, color.a);
 }

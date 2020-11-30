@@ -14,12 +14,11 @@ class Visualizer {
 public:
   static void init();
   static void quit();
+
   Visualizer(const char *, Board *b);
   ~Visualizer();
   void run();
   bool is_running() { return _is_running; }
-  int get_window_width();
-  int get_window_height();
 
 private:
   void draw_board();

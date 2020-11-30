@@ -11,6 +11,7 @@ struct coord_t {
   int x, y;
   coord_t(): x(0), y(0) {}
   coord_t(int _x, int _y): x(_x), y(_y) {}
+  bool operator!=(const coord_t& a) { return x != a.x || y != a.y; }
 };
 
 class Board {

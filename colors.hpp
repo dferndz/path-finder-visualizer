@@ -14,6 +14,6 @@ struct Color {
   const static color_t DarkGreen = 0x00b542ff;
 };
 
-SDL_Color u_to_color(unsigned);
+SDL_Color u_to_color(color_t);
 
-void set_sdl_render_color(SDL_Renderer *, unsigned);
+void set_sdl_render_color(SDL_Renderer *, color_t);
