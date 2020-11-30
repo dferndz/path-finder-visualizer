@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "board.hpp"
-#include "gui.hpp"
+#include "button.hpp"
 
 #define SET_WALL 0x1
 #define SET_START 0x2
