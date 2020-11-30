@@ -1,6 +1,7 @@
 #include <random>
 #include <string.h>
 #include <thread>
+#include <queue>
 #include "visualizer.hpp"
 #include "colors.hpp"
 
@@ -10,7 +11,7 @@
 #define BOARD_W 600
 #define LINE_W 2
 
-#define FONT_PD 18
+#define FONT_PD 30
 #define FONT_FILE "./assets/Montserrat-font/Montserrat-Bold.ttf"
 
 #define WALL_COLOR Color::Yellow
@@ -19,7 +20,7 @@
 #define TARGET_COLOR Color::Red
 
 #define T_COLOR 0xff3030ff
-#define SLEEP_STEP 500
+#define SLEEP_STEP 1
 
 static coord_t last_cell;
 std::thread t1;
@@ -28,9 +29,93 @@ enum status_t {READY, RUNNING, FINISHED};
 
 static status_t finder_status = READY;
 
-static void find_path(color_t **table, int w, int h, coord_t start, color_t target, int slep_step) {
-  table[start.y][start.x] = Color::White;
-  std::this_thread::sleep_for(std::chrono::milliseconds(slep_step));
+static void set_cell(color_t **table, coord_t pos, color_t val) {
+  table[pos.y][pos.x] = val;
+}
+
+static color_t get_cell(color_t **table, coord_t pos) {
+  return table[pos.y][pos.x];
+}
+
+static void push_adjacent(color_t **table, int w, int h, coord_t pos, std::queue<coord_t> &q, coord_t **prevs) {
+  color_t temp;
+  if(pos.x > 0) {
+    temp = table[pos.y][pos.x-1];
+    if (temp != WALL_COLOR && temp != Color::LightGreen && temp != START_COLOR) {
+      q.push(coord_t(pos.x-1, pos.y));
+      prevs[pos.y][pos.x-1] = pos;
+    }
+  }
+  if(pos.x < w-1) {
+    temp = table[pos.y][pos.x+1];
+    if (temp != WALL_COLOR && temp != Color::LightGreen && temp != START_COLOR) {
+      q.push(coord_t(pos.x+1, pos.y));
+      prevs[pos.y][pos.x+1] = pos;
+    }
+  }
+  if(pos.y > 0) {
+    temp = table[pos.y-1][pos.x];
+    if (temp != WALL_COLOR && temp != Color::LightGreen && temp != START_COLOR) {
+      q.push(coord_t(pos.x, pos.y-1));
+      prevs[pos.y-1][pos.x] = pos;
+    }
+  }
+  if(pos.y < h-1) {
+    temp = table[pos.y+1][pos.x];
+    if (temp != WALL_COLOR && temp != Color::LightGreen && temp != START_COLOR) {
+      q.push(coord_t(pos.x, pos.y+1));
+      prevs[pos.y+1][pos.x] = pos;
+    }
+  }
+}
+
+static coord_t** init_p_table(int w, int h) {
+  coord_t **ptr = new coord_t*[h];
+
+  for (int i = 0; i < h; i++) {
+    ptr[i] = new coord_t[w];
+  }
+
+  return ptr;
+}
+
+static void free_p_table(coord_t **ptr, int h) {
+  for (int i = 0; i < h; i++) {
+    delete [] ptr[i];
+  }
+  delete [] ptr;
+}
+
+static void find_path(color_t **table, int w, int h, coord_t start) {
+  std::queue<coord_t> q;
+  coord_t b;
+  coord_t **prev_points = init_p_table(w, h);
+
+  push_adjacent(table, w, h, start, q, prev_points);
+
+  while (!q.empty()) {
+    if (get_cell(table, q.front()) == TARGET_COLOR) {
+      b.x = prev_points[q.front().y][q.front().x].x;
+      b.y = prev_points[q.front().y][q.front().x].y;
+
+      while (b.x != start.x || b.y != start.y) {
+        set_cell(table, b, Color::DarkGreen);
+        b.x = prev_points[b.y][b.x].x;
+        b.y = prev_points[b.y][b.x].y;
+        
+      }
+      
+
+      finder_status = FINISHED;
+      return;
+    }
+
+    set_cell(table, q.front(), Color::LightGreen);
+    push_adjacent(table, w, h, q.front(), q, prev_points);
+    q.pop();
+
+    //std::this_thread::sleep_for(std::chrono::nanoseconds(SLEEP_STEP));
+  }
   finder_status = FINISHED;
 }
 
@@ -75,11 +160,11 @@ Visualizer::Visualizer(const char* title, Board *board) {
   _target.y = -1;
 
   // GUI elements
-  clear_board_button = new Button(_renderer, _font, "Clear", 660, 5);
-  set_wall_button = new Button(_renderer, _font, "Set walls", 650, 100, Color::Yellow, 100);
-  set_start_cell_button = new Button(_renderer, _font, "Set start", 650, 200, Color::Green, 100);
-  set_target_cell_button = new Button(_renderer, _font, "Set target", 650, 300, Color::Red, 100);
-  find_path_button = new Button(_renderer, _font, "Find path", 650, 400, Color::Blue);
+  clear_board_button = new Button(_renderer, _font, "Clear", 660, 50);
+  set_wall_button = new Button(_renderer, _font, "Set walls", 650, 150, Color::Yellow, 100);
+  set_start_cell_button = new Button(_renderer, _font, "Set start", 650, 250, Color::Green, 100);
+  set_target_cell_button = new Button(_renderer, _font, "Set target", 650, 350, Color::Red, 100);
+  find_path_button = new Button(_renderer, _font, "Find path", 650, 450, Color::Blue, 100);
 }
 
 bool Visualizer::is_start_set() {
@@ -213,7 +298,7 @@ void Visualizer::process_events(SDL_Event &event) {
     if(find_path_button->is_pressed()) {
       if(finder_status == READY) {
          _selection_status = FINDING_PATH;
-         t1 = std::thread(find_path, _board->get_table(), _board->get_width(), _board->get_height(), _start, T_COLOR, SLEEP_STEP);
+         t1 = std::thread(find_path, _board->get_table(), _board->get_width(), _board->get_height(), _start);
       }
     }
   case SDL_MOUSEMOTION:

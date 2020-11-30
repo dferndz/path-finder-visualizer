@@ -9,6 +9,8 @@ class Visualizer;
 
 struct coord_t {
   int x, y;
+  coord_t(): x(0), y(0) {}
+  coord_t(int _x, int _y): x(_x), y(_y) {}
 };
 
 class Board {

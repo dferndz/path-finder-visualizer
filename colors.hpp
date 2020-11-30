@@ -10,6 +10,8 @@ struct Color {
   const static color_t Red = 0xff3030ff;
   const static color_t Yellow = 0xf5f23dff;
   const static color_t White = 0xffffffff;
+  const static color_t LightGreen = 0xadffbaff;
+  const static color_t DarkGreen = 0x00b542ff;
 };
 
 SDL_Color u_to_color(unsigned);
