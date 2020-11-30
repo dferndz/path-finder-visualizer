@@ -43,7 +43,7 @@ static bool is_point_valid(color_t **table, coord_t p, int w, int h) {
   color_t temp;
   if (p.x >= 0 && p.x < w && p.y >= 0 && p.y < h) {
     temp = get_cell(table, p);
-    return (temp != WALL_COLOR && temp != START_COLOR && temp != Color::LightGreen);
+    return (temp == TARGET_COLOR || temp == EMPTY_COLOR);
   }
   return false;
 }
@@ -58,10 +58,13 @@ static void push_adjacent(color_t **table, int w, int h, coord_t pos, std::queue
 
   for (auto p : points) {
     if(is_point_valid(table, p, w, h)) {
-      if (get_cell(table, p) != TARGET_COLOR)
-        set_cell(table, p, Color::LightGreen);
       q.push(p);
       prevs[p.y][p.x] = pos;
+
+      if (get_cell(table, p) != TARGET_COLOR)
+        set_cell(table, p, Color::LightGreen);
+      else
+        return;
     }
   }
 }
@@ -104,7 +107,7 @@ static void find_path(color_t **table, int w, int h, coord_t start) {
       finder_status = FINISHED;
       return;
     }
-
+    set_cell(table, q.front(), Color::SoftGreen);
     push_adjacent(table, w, h, q.front(), q, prev_points);
     q.pop();
 
