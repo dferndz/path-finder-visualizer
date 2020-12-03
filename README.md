@@ -27,7 +27,7 @@ Usage: pdriver [-h] [-xylSB number] [-etswvcp hex color]
 Hex colors are formed by combining the rgb values.  
 rgb color 235, 64, 52 (red), converted to hex is eb, 40, 34  
 After the hex digits are combined, the hex color formed is 0xeb4034  
-Then attach hex digit ff at the end, forming the colorr 0xeb4034ff  
+Then attach hex digit ff at the end, forming the color 0xeb4034ff  
 
 ### Screenshot
 
