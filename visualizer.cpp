@@ -17,6 +17,8 @@ Visualizer::Visualizer(const char* title, Board *board, options_t options) {
   // save pointer to board
   _board = board;
   _board->clear_board(options.empty_color);
+
+  //initialize path finder status
   _finder_status = READY;
 
   // initialize options
@@ -88,6 +90,7 @@ Visualizer::~Visualizer() {
   SDL_DestroyWindow(_window);
   TTF_CloseFont(_font);
 
+  delete _path_finder;
   delete clear_board_button;
   delete set_start_cell_button;
   delete set_target_cell_button;
@@ -102,11 +105,13 @@ void Visualizer::run() {
   _is_running = true;
     SDL_Event event;
     while(_is_running) {
+        //check if path finder just finished running
         if(_finder_status == FINISHED) {
           _selection_status = SET_WALL;
           t1.join();
           _finder_status = READY;
         }
+        
         // Process events
         while(SDL_PollEvent(&event)) {
             process_events(event);

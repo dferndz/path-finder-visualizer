@@ -15,7 +15,6 @@
 #define DEFAULT_W 800
 #define DEFAULT_H 600
 #define BOARD_W 600
-
 #define LINE_W 1
 
 #define FONT_PD 200

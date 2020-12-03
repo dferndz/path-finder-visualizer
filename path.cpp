@@ -74,7 +74,7 @@ void PathFinder::operator() (coord_t start, status_t *status) {
   std::queue<coord_t> q;
   coord_t **prev_points = init_p_table(w, h);
 
-  *status = RUNNING;
+  if(status) *status = RUNNING;
 
   push_adjacent(start, q, prev_points);
 
@@ -89,7 +89,7 @@ void PathFinder::operator() (coord_t start, status_t *status) {
       }
       
       free_p_table(prev_points, h);
-      *status = FINISHED;
+      if(status) *status = FINISHED;
       return;
     }
     set_cell(table, q.front(), _visited_color);
@@ -100,5 +100,5 @@ void PathFinder::operator() (coord_t start, status_t *status) {
   }
 
   free_p_table(prev_points, h);
-  *status = FINISHED;
+  if(status) *status = FINISHED;
 }
