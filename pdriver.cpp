@@ -85,7 +85,7 @@ private:
   }
 
   static void print_usage() {
-    std::cout << "Usage: pdriver [-h] [-xylSB number] [-etsw hex]" << std::endl;
+    std::cout << "Usage: pdriver [-h] [-xylSB number] [-etswvcp hex]" << std::endl;
     std::cout << " h number   Prints this message" << std::endl;
     std::cout << " x number   Set width of canvas" << std::endl;
     std::cout << " y number   Set height of canvas" << std::endl;
