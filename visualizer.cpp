@@ -8,96 +8,6 @@
 static coord_t last_cell;
 std::thread t1;
 
-enum status_t {READY, RUNNING, FINISHED};
-
-static status_t finder_status = READY;
-
-static void set_cell(color_t **table, coord_t pos, color_t val) {
-  table[pos.y][pos.x] = val;
-}
-
-static color_t get_cell(color_t **table, coord_t pos) {
-  return table[pos.y][pos.x];
-}
-
-static bool is_point_valid(color_t **table, coord_t p, int w, int h) {
-  color_t temp;
-  if (p.x >= 0 && p.x < w && p.y >= 0 && p.y < h) {
-    temp = get_cell(table, p);
-    return (temp == TARGET_COLOR || temp == EMPTY_COLOR);
-  }
-  return false;
-}
-
-static void push_adjacent(color_t **table, int w, int h, coord_t pos, std::queue<coord_t> &q, coord_t **prevs) {
-  std::vector<coord_t> points = {
-    coord_t(pos.x, pos.y-1),
-    coord_t(pos.x, pos.y+1),
-    coord_t(pos.x-1, pos.y),
-    coord_t(pos.x+1, pos.y)
-  };
-
-  for (auto p : points) {
-    if(is_point_valid(table, p, w, h)) {
-      q.push(p);
-      prevs[p.y][p.x] = pos;
-
-      if (get_cell(table, p) != TARGET_COLOR)
-        set_cell(table, p, Color::LightGreen);
-      else
-        return;
-    }
-  }
-}
-
-static coord_t** init_p_table(int w, int h) {
-  coord_t **ptr = new coord_t*[h];
-
-  for (int i = 0; i < h; i++) {
-    ptr[i] = new coord_t[w];
-  }
-
-  return ptr;
-}
-
-static void free_p_table(coord_t **ptr, int h) {
-  for (int i = 0; i < h; i++) {
-    delete [] ptr[i];
-  }
-  delete [] ptr;
-}
-
-static void find_path(color_t **table, int w, int h, coord_t start) {
-  std::queue<coord_t> q;
-  coord_t b;
-  coord_t **prev_points = init_p_table(w, h);
-
-  push_adjacent(table, w, h, start, q, prev_points);
-
-  while (!q.empty()) {
-    if (get_cell(table, q.front()) == TARGET_COLOR) {
-      b = prev_points[q.front().y][q.front().x];
-
-      while (b != start) {
-        set_cell(table, b, Color::DarkGreen);
-        b = prev_points[b.y][b.x];
-        std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_BACK));
-      }
-      
-      free_p_table(prev_points, h);
-      finder_status = FINISHED;
-      return;
-    }
-    set_cell(table, q.front(), Color::SoftGreen);
-    push_adjacent(table, w, h, q.front(), q, prev_points);
-    q.pop();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_STEP));
-  }
-  free_p_table(prev_points, h);
-  finder_status = FINISHED;
-}
-
 /*
   Visualizer constructor
     title: char*  - Title of the window
@@ -108,6 +18,7 @@ Visualizer::Visualizer(const char* title, Board *board, int line_width) {
   _board = board;
   _board->clear_board(EMPTY_COLOR);
   _line_w = line_width;
+  _finder_status = READY;
 
   // create sdl window
   _window = SDL_CreateWindow(
@@ -138,6 +49,17 @@ Visualizer::Visualizer(const char* title, Board *board, int line_width) {
   _start.y = -1;
   _target.x = -1;
   _target.y = -1;
+
+  // path finder
+  _path_finder = new PathFinder(
+    _board, 
+    EMPTY_COLOR, 
+    TARGET_COLOR,
+    Color::LightGreen,
+    Color::SoftGreen, 
+    SLEEP_STEP,
+    SLEEP_BACK
+  );
 
   // GUI elements
   clear_board_button = new Button(_renderer, _font, "Clear", 660, 50);
@@ -177,10 +99,10 @@ void Visualizer::run() {
   _is_running = true;
     SDL_Event event;
     while(_is_running) {
-        if(finder_status == FINISHED) {
+        if(_finder_status == FINISHED) {
           _selection_status = SET_WALL;
           t1.join();
-          finder_status = READY;
+          _finder_status = READY;
         }
         // Process events
         while(SDL_PollEvent(&event)) {
@@ -264,9 +186,10 @@ void Visualizer::process_events(SDL_Event &event) {
       break;
     }
     if(find_path_button->is_pressed()) {
-      if(finder_status == READY) {
+      if(_finder_status == READY) {
          _selection_status = FINDING_PATH;
-         t1 = std::thread(find_path, _board->get_table(), _board->get_width(), _board->get_height(), _start);
+         t1 = std::thread(*_path_finder, _start, &_finder_status);
+         _finder_status = RUNNING;
       }
     }
   case SDL_MOUSEMOTION:

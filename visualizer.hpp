@@ -5,6 +5,7 @@
 #include "board.hpp"
 #include "button.hpp"
 #include "colors.hpp"
+#include "path.hpp"
 
 #define SET_WALL 0x1
 #define SET_START 0x2
@@ -50,6 +51,8 @@ private:
   TTF_Font *_font;
   bool _is_running;
   Board *_board;
+  PathFinder *_path_finder;
+  status_t _finder_status;
 
   bool is_start_set();
   bool is_target_set();
