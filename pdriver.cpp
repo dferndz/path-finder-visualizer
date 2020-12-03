@@ -6,15 +6,16 @@
 
 #define DEFAULT_GRID_W 30
 #define DEFAULT_GRID_H 30
-#define DEFAULT_LINE_W 1
 
 class Program {
 public:
-  Program(int argc = 0, char *argv[] = nullptr): _grid_w(DEFAULT_GRID_W), _grid_h(DEFAULT_GRID_H), _line_w(DEFAULT_LINE_W) {
+  Program(int argc = 0, char *argv[] = nullptr): _grid_w(DEFAULT_GRID_W), _grid_h(DEFAULT_GRID_H), _options(DEFAULT_OPTIONS) {
     Visualizer::init();
+
     parse_options(argc, argv);
+
     _board = new Board(_grid_h, _grid_w);
-    _visualizer = new Visualizer("Path Finding", _board, _line_w);
+    _visualizer = new Visualizer("Path Finding", _board, _options);
   }
   ~Program() {
     delete _board;
@@ -30,7 +31,7 @@ private:
   void parse_options(int argc, char *argv[]) {
     int c;
 
-    while ((c = getopt(argc, argv, "hx:y:l:")) != -1) {
+    while ((c = getopt(argc, argv, "hx:y:l:S:B:e:t:s:w:v:c:p:")) != -1) {
       switch(c) {
         case 'h':
           // usage
@@ -46,7 +47,34 @@ private:
           break;
         case 'l':
           //set line width
-          _line_w = atoi(optarg);
+          _options.line_w = atoi(optarg);
+          break;
+        case 'S':
+          _options.sleep_step = atoi(optarg);
+          break;
+        case 'B':
+          _options.sleep_back = atoi(optarg);
+          break;
+        case 'e':
+          sscanf(optarg, "%x", &_options.empty_color);
+          break;
+        case 't':
+          sscanf(optarg, "%x", &_options.target_color);
+          break;
+        case 's':
+          sscanf(optarg, "%x", &_options.start_color);
+          break;
+        case 'w':
+          sscanf(optarg, "%x", &_options.wall_color);
+          break;
+        case 'v':
+          sscanf(optarg, "%x", &_options.visited_color);
+          break;
+        case 'c':
+          sscanf(optarg, "%x", &_options.seen_color);
+          break;
+        case 'p':
+          sscanf(optarg, "%x", &_options.path_color);
           break;
         default:
           exit(0);
@@ -57,11 +85,20 @@ private:
   }
 
   static void print_usage() {
-    std::cout << "Usage: pdriver [-h] [-x number] [-y number] [-l number]" << std::endl;
-    std::cout << " h   Prints this message" << std::endl;
-    std::cout << " x   Set width of canvas" << std::endl;
-    std::cout << " y   Set height of canvas" << std::endl;
-    std::cout << " l   Set canvas lines width" << std::endl;
+    std::cout << "Usage: pdriver [-h] [-xylSB number] [-etsw hex]" << std::endl;
+    std::cout << " h number   Prints this message" << std::endl;
+    std::cout << " x number   Set width of canvas" << std::endl;
+    std::cout << " y number   Set height of canvas" << std::endl;
+    std::cout << " l number   Set cell lines width" << std::endl;
+    std::cout << " S number   Set path finder sleep time" << std::endl;
+    std::cout << " B number   Set back tracking sleep time" << std::endl;
+    std::cout << " e hex      Set empty cell color" << std::endl;
+    std::cout << " s hex      Set start cell color" << std::endl;
+    std::cout << " t hex      Set target cell color" << std::endl;
+    std::cout << " w hex      Set wall cell color" << std::endl;
+    std::cout << " v hex      Set visited cell color" << std::endl;
+    std::cout << " c hex      Set seen cell color" << std::endl;
+    std::cout << " p hex      Set path color" << std::endl;
     exit(0);
   }
 
@@ -69,7 +106,7 @@ private:
   Visualizer *_visualizer;
 
   int _grid_w, _grid_h;
-  int _line_w;
+  options_t _options;
 };
 
 int main(int argc, char *argv[]) {

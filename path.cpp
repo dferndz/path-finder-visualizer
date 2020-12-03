@@ -1,7 +1,7 @@
 #include "path.hpp"
 #include <thread>
 
-PathFinder::PathFinder(Board *b, color_t empty, color_t target, color_t seen, color_t visited, int step, int back) {
+PathFinder::PathFinder(Board *b, color_t empty, color_t target, color_t seen, color_t visited, color_t path, int step, int back) {
   _board = b;
   _empty_color = empty;
   _target_color = target;
@@ -9,6 +9,7 @@ PathFinder::PathFinder(Board *b, color_t empty, color_t target, color_t seen, co
   _visited_color = visited;
   _sleep_step = step;
   _sleep_back = back;
+  _path_color= path;
 }
 
 static void set_cell(color_t **table, coord_t pos, color_t val) {
@@ -42,7 +43,7 @@ void PathFinder::push_adjacent(coord_t pos, std::queue<coord_t> &q, coord_t **pr
       prevs[p.y][p.x] = pos;
 
       if (get_cell(_board->get_table(), p) != _target_color)
-        set_cell(_board->get_table(), p, Color::LightGreen);
+        set_cell(_board->get_table(), p, _seen_color);
       else
         return;
     }
@@ -82,7 +83,7 @@ void PathFinder::operator() (coord_t start, status_t *status) {
       b = prev_points[q.front().y][q.front().x];
 
       while (b != start) {
-        set_cell(table, b, Color::DarkGreen);
+        set_cell(table, b, _path_color);
         b = prev_points[b.y][b.x];
         std::this_thread::sleep_for(std::chrono::milliseconds(_sleep_back));
       }
@@ -91,7 +92,7 @@ void PathFinder::operator() (coord_t start, status_t *status) {
       *status = FINISHED;
       return;
     }
-    set_cell(table, q.front(), Color::SoftGreen);
+    set_cell(table, q.front(), _visited_color);
     push_adjacent(q.front(), q, prev_points);
     q.pop();
 

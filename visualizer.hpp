@@ -25,16 +25,45 @@
 #define EMPTY_COLOR Color::Blue
 #define START_COLOR Color::Green
 #define TARGET_COLOR Color::Red
+#define SEEN_COLOR Color::LightGreen
+#define VISITED_COLOR Color::SoftGreen
+#define PATH_COLOR Color::DarkGreen
 
 #define SLEEP_STEP 5
 #define SLEEP_BACK 30
+
+struct options_t {
+  color_t target_color;
+  color_t start_color;
+  color_t empty_color;
+  color_t wall_color;
+  color_t seen_color;
+  color_t visited_color;
+  color_t path_color;
+  int sleep_step;
+  int sleep_back;
+  int line_w;
+};
+
+static const options_t DEFAULT_OPTIONS = {
+  TARGET_COLOR,
+  START_COLOR,
+  EMPTY_COLOR,
+  WALL_COLOR,
+  SEEN_COLOR,
+  VISITED_COLOR,
+  PATH_COLOR,
+  SLEEP_STEP,
+  SLEEP_BACK,
+  LINE_W
+};
 
 class Visualizer {
 public:
   static void init();
   static void quit();
 
-  Visualizer(const char *, Board *b, int line_width = LINE_W);
+  Visualizer(const char *, Board *b, options_t options);
   ~Visualizer();
   void run();
   bool is_running() { return _is_running; }
@@ -63,7 +92,7 @@ private:
   coord_t _target;
 
   // Options
-  int _line_w;
+  options_t _options;
 
   // Gui elements
   Button *clear_board_button;

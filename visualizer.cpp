@@ -13,12 +13,14 @@ std::thread t1;
     title: char*  - Title of the window
     board: Board* - Pointer to board to render
  */
-Visualizer::Visualizer(const char* title, Board *board, int line_width) {
+Visualizer::Visualizer(const char* title, Board *board, options_t options) {
   // save pointer to board
   _board = board;
-  _board->clear_board(EMPTY_COLOR);
-  _line_w = line_width;
+  _board->clear_board(options.empty_color);
   _finder_status = READY;
+
+  // initialize options
+  _options = options;
 
   // create sdl window
   _window = SDL_CreateWindow(
@@ -53,12 +55,13 @@ Visualizer::Visualizer(const char* title, Board *board, int line_width) {
   // path finder
   _path_finder = new PathFinder(
     _board, 
-    EMPTY_COLOR, 
-    TARGET_COLOR,
-    Color::LightGreen,
-    Color::SoftGreen, 
-    SLEEP_STEP,
-    SLEEP_BACK
+    _options.empty_color, 
+    _options.target_color,
+    _options.seen_color,
+    _options.visited_color,
+    _options.path_color,
+    _options.sleep_step,
+    _options.sleep_back
   );
 
   // GUI elements
@@ -127,13 +130,13 @@ void Visualizer::run() {
  */
 void Visualizer::draw_board() {
   SDL_Rect rect;
-  rect.w = BOARD_W / _board->get_width() - _line_w;
-  rect.h = DEFAULT_H / _board->get_height() - _line_w;
+  rect.w = BOARD_W / _board->get_width() - _options.line_w;
+  rect.h = DEFAULT_H / _board->get_height() - _options.line_w;
 
   for (unsigned i = 0; i < _board->get_height(); i++) {
     for(unsigned j = 0; j < _board->get_width(); j++) {
-      rect.y = i * (rect.h + _line_w);
-      rect.x = j * (rect.w + _line_w);
+      rect.y = i * (rect.h + _options.line_w);
+      rect.x = j * (rect.w + _options.line_w);
       set_sdl_render_color(_renderer, _board->get_table()[i][j]);
       SDL_RenderFillRect(_renderer, &rect);
     }
@@ -166,7 +169,7 @@ void Visualizer::process_events(SDL_Event &event) {
     if(_selection_status == FINDING_PATH) break;
 
     if(clear_board_button->is_pressed()) {
-      _board->clear_board(EMPTY_COLOR);
+      _board->clear_board(_options.empty_color);
       _start.x = -1;
       _start.y = -1;
       _target.x = -1;
@@ -206,29 +209,29 @@ void Visualizer::process_events(SDL_Event &event) {
     ) {
 
       if(_selection_status == SET_WALL) {
-        _board->get_cell(coords.x, coords.y) == WALL_COLOR ?
-        _board->get_cell(coords.x, coords.y) = EMPTY_COLOR :
-        _board->get_cell(coords.x, coords.y) = WALL_COLOR;
+        _board->get_cell(coords.x, coords.y) == _options.wall_color ?
+        _board->get_cell(coords.x, coords.y) = _options.empty_color :
+        _board->get_cell(coords.x, coords.y) = _options.wall_color;
       }
 
       if(_selection_status == SET_START) {
         if(is_start_set()) {
-          _board->get_cell(_start.x, _start.y) = EMPTY_COLOR;
+          _board->get_cell(_start.x, _start.y) = _options.empty_color;
         }
         _start.x = coords.x;
         _start.y = coords.y;
 
-        _board->get_cell(_start.x, _start.y) = START_COLOR;
+        _board->get_cell(_start.x, _start.y) = _options.start_color;
       }
 
       if(_selection_status == SET_TARGET) {
         if(is_target_set()) {
-          _board->get_cell(_target.x, _target.y) = EMPTY_COLOR;
+          _board->get_cell(_target.x, _target.y) = _options.empty_color;
         }
         _target.x = coords.x;
         _target.y = coords.y;
 
-        _board->get_cell(_target.x, _target.y) = TARGET_COLOR;
+        _board->get_cell(_target.x, _target.y) = _options.target_color;
       }
       last_cell = coords;
     }
@@ -244,11 +247,11 @@ void Visualizer::process_events(SDL_Event &event) {
 coord_t Visualizer::get_cell(int m_x, int m_y) {
   coord_t coords;
 
-  int w = BOARD_W / _board->get_width() - _line_w;
-  int h = DEFAULT_H / _board->get_height() - _line_w;
+  int w = BOARD_W / _board->get_width() - _options.line_w;
+  int h = DEFAULT_H / _board->get_height() - _options.line_w;
 
-  coords.x = m_x / (w + _line_w);
-  coords.y = m_y / (h + _line_w);
+  coords.x = m_x / (w + _options.line_w);
+  coords.y = m_y / (h + _options.line_w);
 
   return coords;
 }
