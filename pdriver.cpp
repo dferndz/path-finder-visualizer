@@ -87,18 +87,18 @@ private:
   static void print_usage() {
     std::cout << "Usage: pdriver [-h] [-xylSB number] [-etswvcp hex color]" << std::endl;
     std::cout << " h              Prints this message" << std::endl;
-    std::cout << " x number       Set width of canvas" << std::endl;
-    std::cout << " y number       Set height of canvas" << std::endl;
-    std::cout << " l number       Set cell lines width" << std::endl;
-    std::cout << " S number       Set path finder sleep time" << std::endl;
-    std::cout << " B number       Set back tracking sleep time" << std::endl;
-    std::cout << " e hex color    Set empty cell color" << std::endl;
-    std::cout << " s hex color    Set start cell color" << std::endl;
-    std::cout << " t hex color    Set target cell color" << std::endl;
-    std::cout << " w hex color    Set wall cell color" << std::endl;
-    std::cout << " v hex color    Set visited cell color" << std::endl;
-    std::cout << " c hex color    Set seen cell color" << std::endl;
-    std::cout << " p hex color    Set path color" << std::endl;
+    std::cout << " x number       width of canvas" << std::endl;
+    std::cout << " y number       height of canvas" << std::endl;
+    std::cout << " l number       cell lines width" << std::endl;
+    std::cout << " S number       path finder sleep time" << std::endl;
+    std::cout << " B number       back tracking sleep time" << std::endl;
+    std::cout << " e hex color    empty cell color" << std::endl;
+    std::cout << " s hex color    start cell color" << std::endl;
+    std::cout << " t hex color    target cell color" << std::endl;
+    std::cout << " w hex color    wall cell color" << std::endl;
+    std::cout << " v hex color    visited cell color" << std::endl;
+    std::cout << " c hex color    seen cell color" << std::endl;
+    std::cout << " p hex color    path color" << std::endl;
     exit(0);
   }
 
