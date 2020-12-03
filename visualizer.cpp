@@ -4,25 +4,6 @@
 #include <queue>
 #include <vector>
 #include "visualizer.hpp"
-#include "colors.hpp"
-
-
-#define DEFAULT_W 800
-#define DEFAULT_H 600
-#define BOARD_W 600
-#define LINE_W 2
-
-#define FONT_PD 200
-#define FONT_FILE "./assets/Montserrat-font/Montserrat-Bold.ttf"
-
-#define WALL_COLOR Color::Yellow
-#define EMPTY_COLOR Color::Blue
-#define START_COLOR Color::Green
-#define TARGET_COLOR Color::Red
-
-#define T_COLOR 0xff3030ff
-#define SLEEP_STEP 5
-#define SLEEP_BACK 30
 
 static coord_t last_cell;
 std::thread t1;
@@ -122,10 +103,11 @@ static void find_path(color_t **table, int w, int h, coord_t start) {
     title: char*  - Title of the window
     board: Board* - Pointer to board to render
  */
-Visualizer::Visualizer(const char* title, Board *board) {
+Visualizer::Visualizer(const char* title, Board *board, int line_width) {
   // save pointer to board
   _board = board;
   _board->clear_board(EMPTY_COLOR);
+  _line_w = line_width;
 
   // create sdl window
   _window = SDL_CreateWindow(
@@ -223,13 +205,13 @@ void Visualizer::run() {
  */
 void Visualizer::draw_board() {
   SDL_Rect rect;
-  rect.w = BOARD_W / _board->get_width() - LINE_W;
-  rect.h = DEFAULT_H / _board->get_height() - LINE_W;
+  rect.w = BOARD_W / _board->get_width() - _line_w;
+  rect.h = DEFAULT_H / _board->get_height() - _line_w;
 
   for (unsigned i = 0; i < _board->get_height(); i++) {
     for(unsigned j = 0; j < _board->get_width(); j++) {
-      rect.y = i * (rect.h + LINE_W);
-      rect.x = j * (rect.w + LINE_W);
+      rect.y = i * (rect.h + _line_w);
+      rect.x = j * (rect.w + _line_w);
       set_sdl_render_color(_renderer, _board->get_table()[i][j]);
       SDL_RenderFillRect(_renderer, &rect);
     }
@@ -339,11 +321,11 @@ void Visualizer::process_events(SDL_Event &event) {
 coord_t Visualizer::get_cell(int m_x, int m_y) {
   coord_t coords;
 
-  int w = BOARD_W / _board->get_width() - LINE_W;
-  int h = DEFAULT_H / _board->get_height() - LINE_W;
+  int w = BOARD_W / _board->get_width() - _line_w;
+  int h = DEFAULT_H / _board->get_height() - _line_w;
 
-  coords.x = m_x / (w + LINE_W);
-  coords.y = m_y / (h + LINE_W);
+  coords.x = m_x / (w + _line_w);
+  coords.y = m_y / (h + _line_w);
 
   return coords;
 }
