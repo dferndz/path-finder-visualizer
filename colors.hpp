@@ -4,7 +4,7 @@
 
 typedef unsigned color_t;
 
-struct Color {
+namespace Color {
   const static color_t Blue = 0x4287f5ff;
   const static color_t Green = 0x3bff55ff;
   const static color_t Red = 0xff3030ff;
@@ -13,7 +13,7 @@ struct Color {
   const static color_t LightGreen = 0xadffbaff;
   const static color_t SoftGreen = 0x97f56cff;
   const static color_t DarkGreen = 0x00b542ff;
-};
+}
 
 SDL_Color u_to_color(color_t);
 
