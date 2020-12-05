@@ -1,7 +1,7 @@
 #include "path.hpp"
 #include <thread>
 
-PathFinder::PathFinder(Board *b, color_t empty, color_t target, color_t seen, color_t visited, color_t path, int step, int back) {
+PathFinder::PathFinder(Board *b, color_t empty, color_t target, color_t seen, color_t visited, color_t path, bool diagonal_paths, int step, int back) {
   _board = b;
   _empty_color = empty;
   _target_color = target;
@@ -10,6 +10,7 @@ PathFinder::PathFinder(Board *b, color_t empty, color_t target, color_t seen, co
   _sleep_step = step;
   _sleep_back = back;
   _path_color= path;
+  _diagonal_paths = diagonal_paths;
 }
 
 static void set_cell(color_t **table, coord_t pos, color_t val) {
@@ -29,13 +30,26 @@ bool PathFinder::is_point_valid(coord_t p) {
   return false;
 }
 
-void PathFinder::push_adjacent(coord_t pos, std::queue<coord_t> &q, coord_t **prevs) {
+ std::vector<coord_t> PathFinder::get_adjacent_coords(coord_t pos) {
   std::vector<coord_t> points = {
     coord_t(pos.x, pos.y-1),
     coord_t(pos.x, pos.y+1),
     coord_t(pos.x-1, pos.y),
     coord_t(pos.x+1, pos.y)
   };
+
+  if (_diagonal_paths) {
+    points.push_back(coord_t(pos.x + 1, pos.y + 1));
+    points.push_back(coord_t(pos.x + 1, pos.y - 1));
+    points.push_back(coord_t(pos.x - 1, pos.y + 1));
+    points.push_back(coord_t(pos.x - 1, pos.y - 1));
+  }
+
+  return points;
+}
+
+void PathFinder::push_adjacent(coord_t pos, std::queue<coord_t> &q, coord_t **prevs) {
+  std::vector<coord_t> points = get_adjacent_coords(pos);
 
   for (auto p : points) {
     if(is_point_valid(p)) {
