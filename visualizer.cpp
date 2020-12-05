@@ -209,8 +209,8 @@ void Visualizer::process_events(SDL_Event &event) {
     if (
       m_x <= BOARD_W &&
       mouse_status & SDL_BUTTON(1) && 
-      (event.type == SDL_MOUSEMOTION && (coords.x != last_cell.x || coords.y != last_cell.y)) 
-      || event.type == SDL_MOUSEBUTTONDOWN
+      ((event.type == SDL_MOUSEMOTION && (coords.x != last_cell.x || coords.y != last_cell.y)) 
+      || event.type == SDL_MOUSEBUTTONDOWN)
     ) {
 
       if(_selection_status == SET_WALL) {
