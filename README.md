@@ -9,8 +9,9 @@
 
 ### Usage
 ```
-Usage: pdriver [-h] [-xylSB <number>] [-etswvcp <hex-color>]
+Usage: pdriver [-hd] [-xylSB <number>] [-etswvcp <hex-color>]
  h              Prints this message
+ d              Enable diagonal paths
  x <number>     width of canvas
  y <number>     height of canvas
  l <number>     cell lines width
