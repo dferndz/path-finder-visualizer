@@ -31,6 +31,8 @@
 #define SLEEP_STEP 5
 #define SLEEP_BACK 30
 
+#define DEFAULT_DIAGONAL_PATHS false
+
 struct options_t {
   color_t target_color;
   color_t start_color;
@@ -39,6 +41,7 @@ struct options_t {
   color_t seen_color;
   color_t visited_color;
   color_t path_color;
+  bool diagonal_paths;
   int sleep_step;
   int sleep_back;
   int line_w;
@@ -52,6 +55,7 @@ static const options_t DEFAULT_OPTIONS = {
   SEEN_COLOR,
   VISITED_COLOR,
   PATH_COLOR,
+  DEFAULT_DIAGONAL_PATHS,
   SLEEP_STEP,
   SLEEP_BACK,
   LINE_W
