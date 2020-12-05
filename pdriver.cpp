@@ -31,7 +31,7 @@ private:
   void parse_options(int argc, char *argv[]) {
     int c;
 
-    while ((c = getopt(argc, argv, "hx:y:l:S:B:e:t:s:w:v:c:p:")) != -1) {
+    while ((c = getopt(argc, argv, "hdx:y:l:S:B:e:t:s:w:v:c:p:")) != -1) {
       switch(c) {
         case 'h':
           // usage
@@ -51,6 +51,9 @@ private:
           break;
         case 'S':
           _options.sleep_step = atoi(optarg);
+          break;
+        case 'd':
+          _options.diagonal_paths = true;
           break;
         case 'B':
           _options.sleep_back = atoi(optarg);
@@ -85,8 +88,9 @@ private:
   }
 
   static void print_usage() {
-    std::cout << "Usage: pdriver [-h] [-xylSB <number>] [-etswvcp <hex-color>]" << std::endl;
+    std::cout << "Usage: pdriver [-hd] [-xylSB <number>] [-etswvcp <hex-color>]" << std::endl;
     std::cout << " h              Prints this message" << std::endl;
+    std::cout << " d              Enable diagonal paths" << std::endl;
     std::cout << " x <number>     width of canvas" << std::endl;
     std::cout << " y <number>     height of canvas" << std::endl;
     std::cout << " l <number>     cell lines width" << std::endl;

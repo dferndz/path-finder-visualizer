@@ -62,6 +62,7 @@ Visualizer::Visualizer(const char* title, Board *board, options_t options) {
     _options.seen_color,
     _options.visited_color,
     _options.path_color,
+    _options.diagonal_paths,
     _options.sleep_step,
     _options.sleep_back
   );
