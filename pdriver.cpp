@@ -28,8 +28,13 @@ public:
   }
 
 private:
+  static color_t rgb_to_rgba(unsigned rgb) {
+    return ((rgb << 8) | 0xff);
+  }
+
   void parse_options(int argc, char *argv[]) {
     int c;
+    unsigned temp_color;
 
     while ((c = getopt(argc, argv, "hdx:y:l:S:B:e:t:s:w:v:c:p:")) != -1) {
       switch(c) {
@@ -59,25 +64,32 @@ private:
           _options.sleep_back = atoi(optarg);
           break;
         case 'e':
-          sscanf(optarg, "%x", &_options.empty_color);
+          sscanf(optarg, "%x", &temp_color);
+          _options.empty_color = rgb_to_rgba(temp_color);
           break;
         case 't':
-          sscanf(optarg, "%x", &_options.target_color);
+          sscanf(optarg, "%x", &temp_color);
+          _options.target_color = rgb_to_rgba(temp_color);
           break;
         case 's':
-          sscanf(optarg, "%x", &_options.start_color);
+          sscanf(optarg, "%x", &temp_color);
+          _options.start_color = rgb_to_rgba(temp_color);
           break;
         case 'w':
-          sscanf(optarg, "%x", &_options.wall_color);
+          sscanf(optarg, "%x", &temp_color);
+          _options.wall_color = rgb_to_rgba(temp_color);
           break;
         case 'v':
-          sscanf(optarg, "%x", &_options.visited_color);
+          sscanf(optarg, "%x", &temp_color);
+          _options.visited_color = rgb_to_rgba(temp_color);
           break;
         case 'c':
-          sscanf(optarg, "%x", &_options.seen_color);
+          sscanf(optarg, "%x", &temp_color);
+          _options.seen_color = rgb_to_rgba(temp_color);
           break;
         case 'p':
-          sscanf(optarg, "%x", &_options.path_color);
+          sscanf(optarg, "%x", &temp_color);
+          _options.path_color = rgb_to_rgba(temp_color);
           break;
         default:
           exit(0);
